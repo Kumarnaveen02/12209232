@@ -1,13 +1,10 @@
-// src/controllers/urlController.js
 const Url = require('../models/Url');
 const { nanoid } = require('nanoid');
 
-// Helper to get expiry date
 const getExpiryDate = (minutes) => {
   return new Date(Date.now() + minutes * 60 * 1000);
 };
 
-// Create short URL
 exports.createShortUrl = async (req, res) => {
   try {
     const { url, validity = 30, shortcode } = req.body;
@@ -16,7 +13,6 @@ exports.createShortUrl = async (req, res) => {
 
     let code = shortcode || nanoid(6);
 
-    // Check if custom code already exists
     const existing = await Url.findOne({ shortCode: code });
     if (existing) {
       return res.status(409).json({ error: "Shortcode already taken" });
@@ -42,7 +38,6 @@ exports.createShortUrl = async (req, res) => {
   }
 };
 
-// Redirect
 exports.redirectToOriginal = async (req, res) => {
   try {
     const { shortcode } = req.params;
@@ -54,7 +49,6 @@ exports.redirectToOriginal = async (req, res) => {
       return res.status(410).json({ error: "Short link expired" });
     }
 
-    // Track click
     url.clickCount += 1;
     url.clickData.push({
       referrer: req.get('referrer') || "Direct",
@@ -69,7 +63,6 @@ exports.redirectToOriginal = async (req, res) => {
   }
 };
 
-// Analytics
 exports.getAnalytics = async (req, res) => {
   try {
     const { shortcode } = req.params;
