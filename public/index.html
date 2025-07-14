@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simple URL Shortener</title>
+  <style>
+    /* Reset and base */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+      margin: 0;
+    }
+    .container {
+      background: #1a1a2e;
+      padding: 2.5rem 3rem;
+      border-radius: 15px;
+      box-shadow: 0 15px 25px rgba(0,0,0,0.5);
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 0.25rem;
+      font-weight: 700;
+      font-size: 2.5rem;
+      letter-spacing: 2px;
+      color: #f8f8f8;
+      text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+    p.subtitle {
+      margin-top: 0;
+      font-weight: 300;
+      font-size: 1.1rem;
+      color: #cfcfcf;
+      margin-bottom: 2rem;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    input[type="url"] {
+      padding: 14px 18px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      transition: box-shadow 0.3s ease;
+      font-weight: 500;
+      color: #222;
+    }
+    input[type="url"]:focus {
+      box-shadow: 0 0 10px #8a2be2;
+    }
+    button {
+      background: #8a2be2;
+      padding: 14px 18px;
+      font-size: 1.15rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      box-shadow: 0 6px 12px rgba(138, 43, 226, 0.6);
+    }
+    button:hover {
+      background: #6a1b9a;
+      box-shadow: 0 8px 20px rgba(106, 27, 154, 0.9);
+    }
+    #result {
+      margin-top: 2rem;
+      background-color: #222240;
+      padding: 1.5rem 2rem;
+      border-radius: 12px;
+      text-align: left;
+      color: #c5c6f9;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+      word-wrap: break-word;
+    }
+    #result p {
+      margin: 0.4rem 0;
+      font-size: 1rem;
+    }
+    #result a {
+      color: #8a2be2;
+      font-weight: 600;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    #result a:hover {
+      color: #d08aff;
+      text-decoration: underline;
+    }
+    #result p strong {
+      color: #efefef;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>URL Shortener</h1>
+    <p class="subtitle">Quickly shorten your long URLs for easy sharing</p>
+
+    <form id="shortenForm" autocomplete="off">
+      <input type="url" id="url" placeholder="Enter URL to shorten" required />
+      <button type="submit">Shorten URL</button>
+    </form>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('shortenForm');
+    const resultDiv = document.getElementById('result');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const url = document.getElementById('url').value.trim();
+      if (!url) {
+        alert("Please enter a valid URL");
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/shorturls', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          resultDiv.innerHTML = `
+            <p><strong>Short Link:</strong> 
+              <a href="${data.shortLink}" target="_blank" rel="noopener noreferrer">${data.shortLink}</a>
+            </p>
+            <p><strong>Expires At:</strong> ${new Date(data.expiry).toLocaleString()}</p>
+          `;
+        } else {
+          resultDiv.innerHTML = `<p style="color:#ff6b6b;">Error: ${data.error}</p>`;
+        }
+      } catch (err) {
+        resultDiv.innerHTML = `<p style="color:#ff6b6b;">Network error: ${err.message}</p>`;
+      }
+    });
+  </script>
+
+</body>
+</html>
